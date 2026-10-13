@@ -189,12 +189,13 @@ export function useTimer(initialSettings: Settings, callbacks: TimerCallbacks) {
 
   const running = state.phase !== 'idle' && state.endsAt !== null;
 
+  // 自动切换专注/休息时 running 始终为 true，必须按新截止时间重建 tick。
   useEffect(() => {
     if (!running) {
       document.title = BASE_TITLE;
       return;
     }
-    const endsAt = stateRef.current.endsAt as number;
+    const endsAt = state.endsAt as number;
     const tick = () => {
       const now = Date.now();
       if (isDue(endsAt, now)) {
@@ -242,7 +243,7 @@ export function useTimer(initialSettings: Settings, callbacks: TimerCallbacks) {
       window.clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [running, notify]);
+  }, [running, state.endsAt, notify]);
 
   // 屏幕常亮：仅专注阶段请求 Wake Lock（feature-detect，不支持/被拒则静默）
   const paused = state.endsAt === null;
